@@ -2,9 +2,14 @@
 """
 Canon Gate - Pre-Audit Contract Enforcement
 MIRRORNODE-CORE-HUB
-Runs on every PR targeting main. Reads SYSTEM_CONTRACT.md, REPO_MAP.md, and AGENTS_TODO.md as ground truth,
-then checks the incoming diff for contract violations before any merge is allowed.
-Exit 0 = clean, merge allowed. Exit 1 = violation found, merge blocked.
+
+Runs on every PR targeting main. Reads SYSTEM_CONTRACT.md, REPO_MAP.md,
+and AGENTS_TODO.md as ground truth, then checks the incoming diff for
+contract violations before any merge is allowed.
+
+Exit 0 = clean, merge allowed.
+Exit 1 = violation found, merge blocked.
+
 Expand PHANTOM_ROUTES and AUTHORITY_CONFLICTS as contracts evolve.
 """
 import os
@@ -12,23 +17,28 @@ import re
 import subprocess
 import sys
 
+# -- Ground truth files -------------------------------------------------
 CONTRACT_FILE = "SYSTEM_CONTRACT.md"
 REPO_MAP_FILE = "REPO_MAP.md"
 AGENTS_FILE = "AGENTS_TODO.md"
 
+# -- Routes declared non-real in the contract ---------------------------
 PHANTOM_ROUTES = [
     "/system/execute",
     "/system/replay",
     "/execute-task",
 ]
 
+# -- Prose patterns that conflict with LUCIAN as execution authority ----
 AUTHORITY_CONFLICTS = [
     r"osiris.*execution.*(engine|authority|core)",
     r"execution.*(engine|authority|core).*osiris",
     r"triaden?gine",
 ]
 
+# -- Canonical agent ports (7700-7706) ----------------------------------
 CANONICAL_PORTS = {"7700", "7701", "7702", "7703", "7704", "7705", "7706"}
+
 
 def get_diff() -> str:
     base = os.environ.get("BASE_SHA", "HEAD~1")
@@ -36,14 +46,13 @@ def get_diff() -> str:
     try:
         result = subprocess.run(
             ["git", "diff", base, head, "--unified=0"],
-            capture_output=True,
-            text=True,
-            check=True
+            capture_output=True, text=True, check=True
         )
         return result.stdout
     except subprocess.CalledProcessError as e:
         print(f"[Canon Gate] WARNING: Could not get diff: {e}")
         return ""
+
 
 def load_contract() -> str:
     try:
@@ -53,7 +62,9 @@ def load_contract() -> str:
         print(f"[Canon Gate] ERROR: {CONTRACT_FILE} not found. Cannot validate.")
         sys.exit(1)
 
+
 def check_governance_files_present() -> list:
+    """Core governance files cannot be deleted."""
     violations = []
     for f in [CONTRACT_FILE, REPO_MAP_FILE, AGENTS_FILE]:
         if not os.path.exists(f):
@@ -63,7 +74,9 @@ def check_governance_files_present() -> list:
             )
     return violations
 
+
 def check_phantom_routes(diff: str) -> list:
+    """Flag additions of routes declared non-real in the contract."""
     violations = []
     for route in PHANTOM_ROUTES:
         pattern = re.compile(
@@ -77,7 +90,9 @@ def check_phantom_routes(diff: str) -> list:
             )
     return violations
 
+
 def check_authority_conflicts(diff: str) -> list:
+    """Flag prose that contradicts LUCIAN as declared execution authority."""
     violations = []
     for pattern_str in AUTHORITY_CONFLICTS:
         pattern = re.compile(
@@ -91,7 +106,9 @@ def check_authority_conflicts(diff: str) -> list:
             )
     return violations
 
+
 def check_unregistered_ports(diff: str) -> list:
+    """Flag new port declarations outside the canonical 7700-7706 range."""
     violations = []
     pattern = re.compile(r"^\+.*port[:\s]+([0-9]{4,5})", re.MULTILINE | re.IGNORECASE)
     for match in pattern.finditer(diff):
@@ -102,6 +119,7 @@ def check_unregistered_ports(diff: str) -> list:
                 f"agent registry (7700-7706). Update AGENTS_TODO.md first."
             )
     return violations
+
 
 def main():
     print("[Canon Gate] " + "=" * 50)
@@ -116,17 +134,17 @@ def main():
         sys.exit(0)
     print("[Canon Gate] Running checks...\n")
     violations = (
-        check_governance_files_present()
-        + check_phantom_routes(diff)
-        + check_authority_conflicts(diff)
-        + check_unregistered_ports(diff)
+        check_governance_files_present() +
+        check_phantom_routes(diff) +
+        check_authority_conflicts(diff) +
+        check_unregistered_ports(diff)
     )
     if violations:
         print("[Canon Gate] RESULT: VIOLATIONS FOUND - merge blocked\n")
         for i, v in enumerate(violations, 1):
-            print(f" {i}. {v}")
+            print(f"  {i}. {v}")
         print(
-            f"\n[Canon Gate] Resolve all violations against "
+            "\n[Canon Gate] Resolve all violations against "
             f"{CONTRACT_FILE} before this PR can merge."
         )
         print("[Canon Gate] " + "=" * 50)
@@ -135,6 +153,7 @@ def main():
     print("[Canon Gate] Merge authorized.")
     print("[Canon Gate] " + "=" * 50)
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
