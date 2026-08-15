@@ -29,23 +29,28 @@ Represent each material path as:
 
 `Actor → Effective Identity → Provider/Account/Tenant → Integration/Tool → Canonical Resource → Action → Gate → Execution/Effect → Evidence`
 
-For every node/edge attach where applicable:
+For every material edge or claim attach independently:
 
-- stable subject/resource identifier;
+- edge/claim ID;
+- stable subject/resource identifier where applicable;
 - environment;
 - evidence state: VERIFIED / PARTIALLY_VERIFIED / CLAIMED / UNKNOWN;
+- evidence-source reference;
+- point-in-time/freshness information;
 - access mode;
 - impact dimensions;
 - approval requirement;
 - revocation state/freshness;
-- evidence-source reference;
-- point-in-time/freshness information;
 - limitations or unavailable surfaces.
 
-## 3. Authority Topology Table
+A path MUST NOT carry one blanket evidence state when constituent claims differ. Mixed-evidence paths are decomposed into edge/claim rows so a verified permission cannot make a claimed approval gate or unknown revocation state appear verified.
 
-| Subject ID | Actor | Effective Identity | Provider/Account/Tenant | Integration/Tool | Resource ID | Resource | Environment | Action / Access Mode | Gate | Execution / Effect | Revocation | Evidence State | Evidence Ref | Key Impact | Notes / Limits |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+## 3. Authority Edge / Claim Table
+
+| Edge / Claim ID | Path ID | Claim Type | Subject ID | Actor | Effective Identity | Provider/Account/Tenant | Integration/Tool | Resource ID | Resource | Environment | Action / Access Mode | Gate / Control Claim | Execution / Effect | Revocation Claim | Evidence State | Evidence Ref | Freshness | Key Impact | Notes / Limits |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+
+`Path ID` groups multiple claim/edge rows into one end-to-end authority path. Evidence state is evaluated per claim/edge, never inherited from the path as a whole.
 
 ## 4. Findings Register
 
@@ -62,7 +67,7 @@ For each finding:
 - **External consequence:** Low / Moderate / High / Critical
 - **Control-plane reach:** Low / Moderate / High / Critical
 - **Priority:**
-- **Affected path:**
+- **Affected path / claim IDs:**
 - **Observed condition:**
 - **Evidence / freshness:**
 - **Why it matters:**
@@ -73,7 +78,7 @@ For each finding:
 
 ## 5. Approval Boundary Review
 
-Document:
+Document approvals as separate claims/edges rather than inheriting evidence from adjacent permissions:
 
 - approvals that are actually enforced;
 - approvals that exist only in UI/procedure/documentation;
@@ -85,8 +90,8 @@ Document:
 
 ## 6. Integration Verification Ledger
 
-| Integration | Provider/Account/Tenant | Claimed Capability | Verified Capability/Constraint | Verification Threshold Met? | Unknown Surface | Trust-Domain Crossing | Evidence / Freshness |
-|---|---|---|---|---|---|---|---|
+| Integration | Provider/Account/Tenant | Claim ID | Claimed Capability | Verified Capability/Constraint | Verification Threshold Met? | Evidence State | Unknown Surface | Trust-Domain Crossing | Evidence / Freshness |
+|---|---|---|---|---|---|---|---|---|---|
 
 ## 7. Aggregate Authority
 
@@ -102,6 +107,8 @@ Include:
 - policy, identity, credential, approval, delegation, or audit surfaces reachable by the same actor;
 - whether multiple low-impact capabilities combine into a higher-impact effect.
 
+Aggregate conclusions cite the constituent claim/edge IDs and do not upgrade UNKNOWN or CLAIMED edges merely because adjacent permissions are VERIFIED.
+
 ## 8. Evidence Reconstruction
 
 For representative high-impact effects, answer whether the system can reconstruct:
@@ -115,6 +122,8 @@ For representative high-impact effects, answer whether the system can reconstruc
 7. what execution occurred;
 8. what effect resulted;
 9. whether execution matched authorization.
+
+Each answer references its supporting claim/edge IDs and evidence state.
 
 ## 9. Prioritized Remediation
 
@@ -158,9 +167,8 @@ State every material unresolved, inaccessible, undisclosed, provider-internal, s
 
 Record:
 
-- client-managed/delegated access removed or retained;
-- temporary credentials expired/revoked;
-- any intentional follow-on access and its separate authorization;
+- confirmation that all audit access was removed or expired at delivery;
+- any continued access only when governed by a separately authorized follow-on engagement, including scope and new expiry/review point;
 - any credential/security incident encountered during the engagement.
 
 ## 13. Handoff Decision
