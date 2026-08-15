@@ -63,14 +63,25 @@ def load_contract() -> str:
         sys.exit(1)
 
 
+def path_exists_at_ref(ref: str, path: str) -> bool:
+    """Return whether a repository path exists at a specific Git ref."""
+    return subprocess.run(
+        ["git", "cat-file", "-e", f"{ref}:{path}"],
+        capture_output=True,
+        check=False,
+    ).returncode == 0
+
+
 def check_governance_files_present() -> list:
-    """Core governance files cannot be deleted."""
+    """Block deletion of protected files that exist in the PR base."""
     violations = []
+    base = os.environ.get("BASE_SHA", "HEAD~1")
+    head = os.environ.get("HEAD_SHA", "HEAD")
     for f in [CONTRACT_FILE, REPO_MAP_FILE, AGENTS_FILE]:
-        if not os.path.exists(f):
+        if path_exists_at_ref(base, f) and not path_exists_at_ref(head, f):
             violations.append(
-                f"CONTRACT DELETION: '{f}' is missing. "
-                f"Governance files are protected and cannot be removed."
+                f"CONTRACT DELETION: '{f}' was removed. "
+                f"Governance files present in the base are protected."
             )
     return violations
 
