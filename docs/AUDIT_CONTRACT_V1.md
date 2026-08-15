@@ -1,198 +1,204 @@
 # Agent Authority Audit v1 — Engagement Contract
 
 **Status:** Commercial validation draft  
-**Delivery target:** 48 hours after complete bounded intake and access readiness  
-**Scope unit:** One bounded agent-enabled environment
+**Delivery target:** 48 hours after signed scope freeze, complete bounded intake, and access readiness  
+**Scope unit:** One quantitatively capped agent-enabled environment
 
 ## 1. Objective
 
-Reconstruct and visualize the effective authority topology of an agent-enabled operational environment, clearly separating directly verified capability from assumptions, undocumented expectations, and inaccessible surfaces.
+Produce a point-in-time, evidence-backed reconstruction and visualization of the effective authority topology inside an agreed scope. The audit distinguishes directly verified controls from partial evidence, documentation, and unresolved surfaces.
 
-The audit is diagnostic. It does not itself modify production authority.
+The audit is diagnostic. It does not itself modify production authority and does not guarantee discovery of every authority path outside the agreed or observable scope.
 
-## 2. Required intake
+## 2. Scope schedule and start condition
 
-The 48-hour clock begins only after the agreed intake is complete.
+The 48-hour clock begins only after a written scope schedule is accepted.
 
-Minimum intake:
+Default v1 caps unless separately quoted:
 
-- primary repository or repository set in scope;
-- named environment(s): local / development / staging / production;
-- known agent or coding-agent entry points;
-- known tool, MCP, API, database, cloud, deployment, messaging, or workflow integrations;
-- available configuration / policy / workflow files;
-- read-only access sufficient to inspect the agreed surfaces;
-- a named technical contact for access clarification;
-- explicit exclusions and protected surfaces that must not be inspected.
+- up to 3 repositories;
+- up to 2 environments;
+- up to 10 material actor/identity principals;
+- up to 8 material integrations/tool surfaces;
+- up to 25 material authority paths;
+- up to 40 evidence-source items requiring substantive review.
 
-Optional but valuable:
+The scope schedule identifies:
 
-- current architecture diagram;
-- existing IAM / role / service-account inventory;
-- deployment topology;
-- approval workflow documentation;
-- security or compliance requirements;
-- recent incident or near-miss motivating the audit.
+- included repositories and environments;
+- named agent/runtime entry points;
+- included integrations and trust domains;
+- material identities/principals;
+- explicit exclusions;
+- known unavailable surfaces;
+- client technical contact;
+- evidence sources expected at start;
+- any representative-path sampling rules.
 
-## 3. Evidence classes
+If discovery exceeds a cap, the auditor does not silently expand the engagement. The client receives either: (a) prioritized representative-path coverage within the original cap, or (b) a written scope-change option for added time/cost. The 48-hour commitment applies to the accepted capped scope.
 
-Every material claim in the audit is assigned one of four states:
+## 3. Evidence classes and verification threshold
+
+Every material claim has an evidence state and a claim type. Evidence sufficiency depends on the claim being made.
 
 ### VERIFIED
-Direct evidence supports the stated capability, boundary, or constraint.
-
-Examples: repository configuration, policy file, workflow definition, authenticated integration metadata, runtime trace, role assignment, explicit approval check.
+The evidence available within scope is sufficient for the exact claim, at the stated point in time, under the verification matrix below. VERIFIED does not imply that no alternate path exists outside observed scope.
 
 ### PARTIALLY_VERIFIED
-Some of the path is evidenced, but at least one material link remains unresolved.
+One or more material links required by the verification matrix are missing, stale, indirect, or deployment status cannot be corroborated.
 
 ### CLAIMED / DOCUMENTED
-Documentation or stakeholder description states the behavior, but direct operational evidence was not available.
+A stakeholder, policy, configuration, diagram, or documentation states the behavior, but the evidence threshold for VERIFIED was not met.
 
 ### UNKNOWN
-The surface could not be resolved within scope. Unknown never means safe, unsafe, allowed, or denied by inference alone.
+The claim cannot be resolved within scope. UNKNOWN is not interpreted as safe, unsafe, allowed, or denied.
+
+### Verification matrix
+
+| Claim type | Minimum evidence for VERIFIED |
+|---|---|
+| Capability exists | Effective identity/permission evidence plus a current configuration or runtime/integration source linking the identity to the resource/action. |
+| Capability denied / read-only | Effective permission or enforcement evidence showing the denied action is unavailable at the relevant enforcement point; static documentation alone is insufficient. |
+| Human approval is binding | Evidence of the execution path and the technical gate that prevents effect without valid approval; UI/procedure evidence alone is insufficient. |
+| Production reachability | Current deployment/integration path plus effective identity/permission evidence reaching the production resource. |
+| Policy constraint is enforced | The policy/configuration version plus evidence that the relevant runtime/enforcement component is actually using or enforcing it. |
+| Revocation works | Current revocation mechanism/configuration and evidence showing the enforcement surface consumes or checks that state within the claimed bound. |
+| Audit reconstruction exists | Request/decision/execution/effect records can be linked for at least one representative path without relying on undocumented inference. |
+| Absence of alternate path | Not assigned VERIFIED by this audit unless the bounded scope is demonstrably exhaustive for that trust domain; otherwise state the limitation explicitly. |
+
+Evidence freshness is recorded where material. Static repository content may verify declared configuration at a revision, but not deployed enforcement unless deployment/use is independently corroborated.
 
 ## 4. Authority dimensions
 
-The audit maps authority across these dimensions:
+The audit maps:
 
-- **Actor / subject** — human, agent, service, workload, app, bot, CI/CD identity.
-- **Identity** — account, workload identity, service account, token principal, app installation, or equivalent.
-- **Action** — read, write, mutate, trigger, approve, execute, deploy, administer, authorize, delegate.
-- **Resource** — repository, database, service, environment, cloud resource, communication surface, deployment target, secret store, policy surface.
-- **Path** — direct or chained route from actor to effect.
-- **Gate** — policy, approval, review, branch protection, runtime check, human confirmation, security verdict, or equivalent enforcement point.
-- **Evidence** — what proves the request, decision, execution, and resulting effect.
-- **Revocation** — how authority is withdrawn and how quickly enforcement learns of that withdrawal.
-- **Composition** — whether individually bounded grants combine into greater effective authority.
+- actor / subject;
+- effective identity;
+- provider/account/tenant or trust domain;
+- action;
+- canonical resource;
+- integration/tool path;
+- environment;
+- approval or policy gate;
+- effect/execution identity;
+- evidence path;
+- revocation;
+- composition / aggregate authority.
 
-## 5. Severity / consequence model
+## 5. Impact and priority model
 
-Findings are ranked by consequence, not novelty.
+Access mode, evidence confidence, and impact are recorded separately. No single ordinal level substitutes for these dimensions.
 
-### Level 0 — Observational
-Read-only or informational capability with no meaningful protected-state effect.
+### Access mode
 
-### Level 1 — Mutable low-impact
-Can alter bounded non-production or reversible state.
+`OBSERVE / READ / WRITE / TRIGGER / EXECUTE / DEPLOY / ADMINISTER / AUTHORIZE / DELEGATE`
 
-### Level 2 — Operational
-Can trigger workflows, modify shared systems, create durable artifacts, or affect team operations.
+### Impact dimensions
 
-### Level 3 — High consequence
-Can mutate production, deploy, reach sensitive data, change credentials, or cause externally visible effects.
+Each finding records Low / Moderate / High / Critical where applicable for:
 
-### Level 4 — Authority / control plane
-Can change security policy, approval behavior, identity mappings, audit evidence, delegation rules, enforcement controls, or another actor's effective authority.
+- **Confidentiality** — exposure of protected or sensitive information;
+- **Integrity** — ability to alter protected state or outputs;
+- **Availability** — ability to disrupt or remove service/resource availability;
+- **Blast radius** — breadth of affected resources/users/environments;
+- **Irreversibility** — difficulty of restoring the prior state;
+- **External consequence** — customer, financial, legal, public, or third-party effect;
+- **Control-plane reach** — ability to alter identity, policy, approval, delegation, credentials, audit evidence, or enforcement itself.
 
-Severity may be raised by blast radius, irreversibility, sensitivity, uncertainty, weak provenance, composition, or missing revocation.
+Evidence confidence remains the separate VERIFIED / PARTIALLY_VERIFIED / CLAIMED / UNKNOWN state.
+
+### Priority
+
+Final priority is an auditor judgment derived from the impact dimensions, access mode, exploitability/feasibility of the observed path, aggregate composition, and uncertainty. The report must state the contributing dimensions rather than presenting a bare score.
+
+Read-only access to secrets or customer data can therefore be high-priority confidentiality exposure even though its access mode is READ.
 
 ## 6. Authority Map
 
 The primary artifact represents:
 
-`actor → identity → integration/tool → canonical resource → action → gate → execution path → evidence`
+`actor → effective identity → provider/account/tenant → integration/tool → canonical resource → action → gate → execution/effect → evidence`
 
-Each edge is marked with evidence state and consequence level where supported.
+Each material edge includes, where available:
 
-The map must make visible:
+- stable subject and resource identifier;
+- environment;
+- evidence state;
+- access mode;
+- impact dimensions;
+- approval requirement;
+- revocation state/freshness;
+- evidence-source reference;
+- limitations/unknowns.
 
-- hidden or indirect paths;
-- verified versus assumed access;
-- crossings between trust domains;
-- approval gates that exist only in documentation;
-- paths where human review occurs but is not technically binding;
-- unbounded or unclear delegation;
-- aggregate authority across multiple integrations;
-- paths to production or authority-changing effects;
-- evidence discontinuities.
+The map must expose indirect paths, trust-domain crossings, procedural-versus-technical approvals, aggregate authority, production/control-plane reach, and evidence discontinuities.
 
-## 7. Required findings categories
+## 7. Validation posture
 
-The audit actively tests for:
+The standard audit is **passive evidence analysis by default**. It may inspect configuration, metadata, policy, logs, traces, and existing records, but does not issue live requests intended to test bypass, mutate grants, exercise production effects, or alter authorization state.
 
-- excessive or undocumented authority;
-- unverified integration assumptions;
-- human approval that is advisory rather than enforcing;
-- self-ratification / same-actor approval paths;
-- provider or tool output treated as execution authority;
-- mutable policy references without integrity binding;
-- stale approval / state mismatch;
-- retries that reuse authorization without revalidation;
-- weak or absent revocation semantics;
-- resource aliasing / scope ambiguity;
-- multi-grant authority composition;
-- audit success confused with authorization correctness;
-- evidence paths that cannot reconstruct who authorized what;
-- UI / dashboard representations that understate actual authority.
+Any active validation requires a separately approved written test plan specifying:
 
-## 8. Deliverables
+- non-production/sandbox target where feasible;
+- test identities/accounts;
+- exact allowed actions;
+- prohibited actions;
+- stop conditions;
+- expected observable effect;
+- rollback/restoration plan;
+- monitoring/contact during the test;
+- explicit client authorization.
 
-### A. Executive authority summary
-A short plain-language answer to: what can act, what can it affect, where does human authority hold, and what needs attention first?
+Without that test plan, questions such as bypassability, retry side effects, and revocation propagation are answered from passive evidence and labeled according to the evidence threshold achieved.
 
-### B. Authority Map
-Visual and machine/structured representation where practical.
+## 8. Required findings categories
 
-### C. Evidence ledger
-Key claims with evidence class and source reference.
+The audit examines, within the agreed passive scope, excessive/undocumented authority, unverified integrations, weak approval enforcement, same-actor authority concentration, stale state/approval, revocation gaps, resource ambiguity, aggregate composition, policy-integrity gaps, execution/evidence discontinuity, and misleading UI representations.
 
-### D. Findings register
-Each finding includes consequence, evidence, affected path, failure mode, and remediation direction.
+## 9. Deliverables
 
-### E. Prioritized remediation plan
-Ordered by risk reduction and implementation dependency.
+- Executive authority summary;
+- Authority Map;
+- Evidence ledger;
+- findings register with separate impact dimensions and evidence state;
+- prioritized remediation plan;
+- control-plane fit assessment;
+- residual unknowns and scope limitations.
 
-### F. Control-plane fit assessment
-Maps findings to possible control classes such as:
+## 10. Explicit exclusions
 
-- policy decision / enforcement;
-- explicit approval gate;
-- identity hardening;
-- resource canonicalization;
-- delegation envelope;
-- revocation / expiry;
-- aggregate-authority ceiling;
-- authorization / execution receipt;
-- operator/HUD visibility.
+Unless separately contracted and authorized:
 
-## 9. Explicit exclusions
-
-Unless separately contracted, the audit does not include:
-
-- exploit development or active penetration testing;
+- exploit development or penetration testing;
+- live bypass attempts;
 - social engineering;
 - credential harvesting;
 - destructive testing;
 - production changes;
-- legal advice or certification;
-- formal SOC 2 / ISO / FedRAMP / EU AI Act certification;
-- source-code quality review unrelated to authority or control flow;
-- unlimited repository or organization-wide discovery;
+- legal/compliance certification;
+- unlimited organization-wide discovery;
 - inference about inaccessible provider-internal behavior.
 
-## 10. Safety and access posture
+## 11. Temporary access lifecycle
 
-- Prefer read-only access.
-- Use least privilege necessary for evidence collection.
-- Do not request raw secret values when metadata or configured references are sufficient.
-- Do not copy credentials into audit artifacts.
-- Flag inaccessible surfaces rather than bypassing them.
-- Client retains control over access removal at all times.
+Client access is treated as temporary audit access.
 
-## 11. Timing
+- Prefer client-managed, federated, delegated, or app-based read-only access over shared credentials.
+- Raw passwords, private keys, API keys, recovery codes, or secret values MUST NOT be sent through ordinary intake documents, email, chat, repository issues, or audit artifacts.
+- If a temporary token/session is unavoidable, transfer must use a client-approved secure channel and the credential must be least-privileged, scoped to the engagement, and time-limited.
+- Credential values must not be committed to source control or copied into findings, screenshots, logs, prompts, or deliverables.
+- Local/tool logging that could capture credential values must be disabled, redacted, or reviewed before use.
+- Access must be revocable by the client throughout the engagement.
+- Temporary access should expire or be revoked at delivery, unless a separately agreed follow-on engagement requires continuation.
+- Any suspected credential disclosure or unintended privilege must be reported to the client contact promptly and use of that credential stops until disposition.
+- The delivery record notes that audit access was removed/expired or identifies any client-controlled access intentionally left active.
 
-The standard delivery target is 48 hours after complete intake and access readiness for the agreed bounded environment.
+## 12. Timing and completeness limitation
 
-The clock pauses when a blocking access dependency, materially incomplete scope definition, or client-requested hold prevents evidence collection.
+The delivery target is 48 hours for the signed capped scope after access readiness. Blocking access or client-requested holds pause the clock.
 
-## 12. Handoff
+The audit is a point-in-time assessment of evidence observable within the agreed scope. It does not warrant that inaccessible, undisclosed, provider-internal, future, or out-of-scope authority paths do not exist.
 
-The audit ends with a decision point:
+## 13. Handoff
 
-- **Accept risk / no further work**;
-- **Remediate internally** using the findings;
-- **Architecture engagement** for control-boundary design;
-- **Implementation engagement** under a new scope.
-
-No remediation or implementation is assumed or automatically authorized by purchase of the audit.
+The client may accept risk, remediate internally, request a separate architecture engagement, or request separately scoped implementation. Purchase of the audit does not authorize remediation or production change.
