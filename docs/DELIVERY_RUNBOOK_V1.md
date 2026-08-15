@@ -29,7 +29,7 @@ Build the initial actor/resource graph:
 - messaging/project systems;
 - policy / approval / audit surfaces.
 
-Record each material claim using the contract verification matrix: VERIFIED, PARTIALLY_VERIFIED, CLAIMED, or UNKNOWN.
+Record each material claim independently using the contract verification matrix: VERIFIED, PARTIALLY_VERIFIED, CLAIMED, or UNKNOWN. Do not assign one evidence state to an end-to-end path when its constituent claims differ.
 
 ## Phase 2 — Authority reconstruction
 
@@ -46,6 +46,8 @@ For each material actor:
 9. identify revocation mechanism/freshness;
 10. identify authority-changing surfaces;
 11. calculate material aggregate authority.
+
+For each material claim or edge created by this reconstruction, assign a stable claim/edge ID and an independent evidence state. UNKNOWN is explicit and must not be inherited from or overwritten by adjacent VERIFIED claims.
 
 ## Phase 3 — Passive adversarial boundary analysis
 
@@ -72,7 +74,9 @@ Render each material path as:
 
 `Actor → Effective Identity → Provider/Account/Tenant → Integration/Tool → Resource → Action → Gate → Execution/Effect → Evidence`
 
-Attach stable identifiers, environment, evidence state, access mode, impact dimensions, revocation state, evidence references, and limitations where available.
+Decompose each path into the material claim/edge records defined in the deliverable template. Every material claim/edge must carry its own evidence state, evidence reference, and freshness/limitation data; no blanket path-wide evidence state is permitted.
+
+Attach stable identifiers, environment, access mode, impact dimensions, revocation state, evidence references, and limitations where available.
 
 Visual hierarchy should prioritize consequence and authority depth rather than component aesthetics. Suggested visual grammar:
 
@@ -89,7 +93,8 @@ The visualization is explanatory; it is not itself an authorization source.
 
 Each material finding states:
 
-- evidence state;
+- constituent claim/edge IDs;
+- evidence state for each material claim/edge relied upon;
 - evidence references/freshness;
 - affected authority path;
 - access mode;
@@ -107,17 +112,20 @@ Avoid generic recommendations that do not name the affected path.
 Before delivery verify:
 
 - quantitative scope caps and sampling are disclosed;
+- every material claim/edge has an independently assigned evidence state, including explicit UNKNOWN where unresolved;
 - every VERIFIED claim meets its claim-specific threshold;
 - static configuration is not described as deployed enforcement without corroboration;
-- UNKNOWN remains UNKNOWN;
+- no path-wide evidence state masks mixed support across constituent claims/edges;
 - no live validation occurred without its own authorized test plan;
 - no raw credentials or secret values appear in artifacts/logs;
-- audit access lifecycle is documented for closure;
+- all audit access has been removed or expired and closure is confirmed, unless a separately authorized follow-on engagement explicitly governs continued access, scope, purpose, and new expiry/review point;
 - findings separate evidence confidence from impact;
-- Authority Map and topology table preserve the same complete path;
+- Authority Map and claim/edge table preserve the same complete path grammar;
 - approval claims distinguish procedural review from technical enforcement;
 - aggregate authority was considered for every material actor;
 - executive summary states point-in-time and scope limitations.
+
+The audit is not deliverable while required access closure remains unresolved.
 
 ## Phase 7 — Client handoff
 
@@ -130,7 +138,7 @@ Walk through:
 5. where human authority is binding versus advisory;
 6. smallest remediation sequence;
 7. unresolved surfaces;
-8. audit-access closure;
+8. confirmed audit-access closure, or the separately authorized follow-on engagement governing retained access;
 9. optional separately scoped next engagement.
 
 The client receives the audit artifacts whether or not follow-on work is purchased.
