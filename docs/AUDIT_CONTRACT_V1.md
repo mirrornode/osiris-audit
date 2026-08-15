@@ -189,9 +189,10 @@ Client access is treated as temporary audit access.
 - Credential values must not be committed to source control or copied into findings, screenshots, logs, prompts, or deliverables.
 - Local/tool logging that could capture credential values must be disabled, redacted, or reviewed before use.
 - Access must be revocable by the client throughout the engagement.
-- Temporary access should expire or be revoked at delivery, unless a separately agreed follow-on engagement requires continuation.
+- All audit access MUST be removed or expired at delivery.
+- Continued access after delivery is permitted only under a separately authorized follow-on engagement that explicitly identifies the retained access, scope, purpose, and new expiry/review point.
 - Any suspected credential disclosure or unintended privilege must be reported to the client contact promptly and use of that credential stops until disposition.
-- The delivery record notes that audit access was removed/expired or identifies any client-controlled access intentionally left active.
+- The delivery record MUST confirm that audit access was removed/expired, or identify the separately authorized follow-on engagement governing continued access.
 
 ## 12. Timing and completeness limitation
 
